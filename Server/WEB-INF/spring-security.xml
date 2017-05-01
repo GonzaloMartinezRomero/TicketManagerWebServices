@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:security="http://www.springframework.org/schema/security"
+	xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                            http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+                            http://www.springframework.org/schema/security
+                            http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+    
+        
+        <bean id="autenticacionDigest" class="org.springframework.security.web.authentication.www.DigestAuthenticationEntryPoint">
+            <property name="realmName" value="RealGestorTickets"/>
+            <property name="key" value="123456"/>
+        </bean>
+        
+        <security:authentication-manager>
+            <security:authentication-provider>
+                <security:jdbc-user-service id="AutenticacionBaseDatos" data-source-ref="dataSource"
+                                users-by-username-query="select id, password , activo from Entidad where id=?"
+                               authorities-by-username-query="select IdUsuario, rol from rol where IdUsuario=?"/>
+            </security:authentication-provider>
+	</security:authentication-manager>
+        
+        
+        <bean id="filtroAutenticacionDigest" class="org.springframework.security.web.authentication.www.DigestAuthenticationFilter">
+            <property name="userDetailsService" ref="AutenticacionBaseDatos" />
+            <property name="authenticationEntryPoint" ref="autenticacionDigest"/>
+        </bean>
+    
+     
+        <security:http use-expressions="true" create-session="stateless" entry-point-ref="autenticacionDigest">
+            <security:intercept-url pattern="/Admin/**" access="hasRole('ROLE_ADMIN')" />
+            <security:intercept-url pattern="/User/**" access="hasRole('ROLE_USER')" />     
+            <security:custom-filter ref="filtroAutenticacionDigest" position="BASIC_AUTH_FILTER"/> 
+            <security:csrf disabled="true"/>
+        </security:http>                    
+      
+      
+</beans>
+
+

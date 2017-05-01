@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                            http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+                            http://www.springframework.org/schema/tx 
+                            http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+                            http://www.springframework.org/schema/aop
+                            http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+                            http://www.springframework.org/schema/context
+                            http://www.springframework.org/schema/context/spring-context-4.3.xsd"
+        xmlns:tx="http://www.springframework.org/schema/tx" 
+        xmlns:aop="http://www.springframework.org/schema/aop" 
+        xmlns:jee="http://www.springframework.org/schema/jee"  
+        xmlns:context="http://www.springframework.org/schema/context">
+
+   
+    <bean id="recintoDAO" class="com.ujaen.DAOs.RecintoDAO"/> 
+    <bean id="eventoDAO" class="com.ujaen.DAOs.EventoDAO"/>
+    <bean id="entidadDAO" class="com.ujaen.DAOs.EntidadDAO"/>
+    
+   
+      <!--CONFIGURACION JDBC -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.apache.derby.jdbc.ClientDriver"/>
+        <property name="url" value="jdbc:derby://localhost:1527/GestorTicketsDB"/>
+        <property name="username" value="usuario"/>
+        <property name="password" value="123456"/>        
+    </bean>
+
+    <!-- CONFIGURACION JPA -->
+     <bean id="jpaAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+        <property name="database" value="DERBY"/>
+        <property name="databasePlatform" value="org.hibernate.dialect.DerbyTenSevenDialect" />        
+        <property name="showSql" value="true" />
+        <property name="generateDdl" value="true" />
+    </bean>    
+   
+    <!-- CONFIGURACION EMF   -->    
+    <bean id= "emf" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" >
+        <property name="packagesToScan">
+            <array> 
+                <value>com.ujaen.actividades</value>
+                <value>com.ujaen.entidades</value>              
+            </array>            
+        </property>          
+        <property name="dataSource" ref="dataSource"/>
+        <property name="jpaVendorAdapter" ref="jpaAdapter"/>        
+    </bean>
+    
+     <!-- TRADUCCION EXCEPCIONES JPA A SPRING PARA @Repository -->  
+    <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
+      
+     <!--INYECTAR EM EN EL DAO-->
+     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>   
+    
+     <!-- CONFIGURACION TRANSACCIONES JPA-->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="emf"/>
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+    
+    
+    
+</beans>
+ 
